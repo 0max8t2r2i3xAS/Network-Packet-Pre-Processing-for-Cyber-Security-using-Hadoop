@@ -1,0 +1,66 @@
+
+docker pull kiwenlau/hadoop:1.0
+docker network create --driver=bridge hadoop
+docker run -itd --net=hadoop -p 50070:50070 -p 8088:8088 --name hadoop-master --hostname hadoop-master kiwenlau/hadoop:1.0
+docker run -itd --net=hadoop --name hadoop-slave1 --hostname hadoop-slave1 kiwenlau/hadoop:1.0
+docker run -itd --net=hadoop --name hadoop-slave2 --hostname hadoop-slave2 kiwenlau/hadoop:1.0
+
+docker exec -it hadoop-master bash
+
+sudo apt-get install nano
+
+
+nano ~/.bashrc
+#add these line at the end
+export HADOOP_CLASSPATH=/usr/lib/jvm/java-7-openjdk-amd64/lib/tools.jar
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+
+nano /usr/local/hadoop/etc/hadoop/yarn-site.xml
+#add these line 
+<property> 
+   <name>yarn.log-aggregation-enable</name> 
+   <value>true</value> 
+</property> 
+<property> 
+   <name>yarn.log-aggregation.retain-seconds</name>
+   <value>604800</value>
+</property>
+
+start-all.sh
+
+#check
+jps
+
+#
+export HADOOP_STREAMING_JAR=$HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-2.7.2.jar
+
+hadoop fs -mkdir -p input_directory
+hdfs dfs -put ./input_directory/* input_directory
+
+hadoop jar $HADOOP_STREAMING_JAR \
+    -files mapper.py,reducer.py \
+    -mapper mapper.py \
+    -reducer reducer.py \
+    -input input_directory \
+    -output output_directory
+
+hdfs dfs -cat output_directory/part-r-00000
+hadoop fs -rm -r output_directory/
+
+
+run.sh
+hadoop fs -rm -r output_directory/
+hadoop jar $HADOOP_STREAMING_JAR     -files mapper.py,reducer.py     -mapper mapper.py     -reducer reducer.py     -input input_directory     -output output_directory
+hdfs dfs -cat output_directory/part-r-00000
+
+
+
+In Slaves:
+sudo apt-get update
+sudo apt install Python3-pip -y
+pip3 install dpkt
+
+ls /usr/local/hadoop/logs/userlogs/
+
+
+
