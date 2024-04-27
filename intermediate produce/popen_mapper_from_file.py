@@ -16,7 +16,7 @@ def pcap_mapper():
     for filename in input_stream:
         filename = filename.strip().replace(b'\x00', b'').decode('utf-8')
         try:
-            with Popen(["hadoop", "fs", "-cat", filename], stdout=PIPE) as f:
+            with Popen(["/usr/local/hadoop/bin/hadoop", "fs", "-cat", filename], stdout=PIPE) as f:
                 pcap = dpkt.pcap.Reader(f.stdout)
                 for ts, buf in pcap:
                     try:

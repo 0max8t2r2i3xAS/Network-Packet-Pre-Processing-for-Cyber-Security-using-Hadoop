@@ -64,3 +64,4 @@ ls /usr/local/hadoop/logs/userlogs/
 
 
 
+hadoop dfsadmin -safemode leave
